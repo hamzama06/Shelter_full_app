@@ -120,6 +120,7 @@ public class home extends AppCompatActivity
 
                             for (DataSnapshot userdataSnapshot : userid.getChildren()) {
 
+                                String cId = userdataSnapshot.child("cId").getValue(String.class);
                                 String hname = userdataSnapshot.child("cName").getValue(String.class);
                                 String haddress = userdataSnapshot.child("cAddress").getValue(String.class);
                                 String hcity = userdataSnapshot.child("cCity").getValue(String.class);
@@ -129,7 +130,7 @@ public class home extends AppCompatActivity
                                 String hpdate = userdataSnapshot.child("pdate").getValue(String.class);
                                 String huserid = userdataSnapshot.child("userid").getValue(String.class);
 
-                                HomeFirebaseClass hometramp = new HomeFirebaseClass(hname, haddress, hcity, huri, huseruri, husername, hpdate,huserid);
+                                HomeFirebaseClass hometramp = new HomeFirebaseClass(cId ,hname, haddress, hcity, huri, huseruri, husername, hpdate,huserid);
                                 trampList.add(0, hometramp);
                             }
                         }

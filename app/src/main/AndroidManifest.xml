@@ -4,8 +4,8 @@
 
     <!-- Include required permissions -->
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
@@ -103,16 +103,16 @@
         <activity android:name=".trampdata" />
         <activity android:name=".ProfileActivity" />
         <activity android:name=".userwork" />
-        <activity android:name=".displayOrganizations"></activity>
+        <activity android:name=".displayOrganizations" />
 
-        <!--Firebase message-->
-        <service
-            android:name=".MyFirebaseMessagingService">
+        <!-- Firebase message -->
+        <service android:name=".MyFirebaseMessagingService">
             <intent-filter>
-                <action android:name="com.google.firebase.MESSAGING_EVENT"/>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
-        <!--Firebase message-->
+        <!-- Firebase message -->
+        <activity android:name=".EditDataActivity"></activity>
     </application>
 
 </manifest>

@@ -6,7 +6,9 @@ import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
+import android.view.View;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
@@ -15,20 +17,19 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class Account extends AppCompatActivity {
     private FirebaseAuth mAuth;
-    private StorageReference mStorageRef;
     private DatabaseReference databaseTramp;
     private DatabaseReference databaseReg;
     String type, country;
     ListView listViewTrampA;
     List<HomeFirebaseClass> trampList;
+    private ProgressBar progressBar;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,12 +40,12 @@ public class Account extends AppCompatActivity {
 
 
         databaseTramp = FirebaseDatabase.getInstance().getReference("trampoos");
-        mStorageRef = FirebaseStorage.getInstance().getReference("trrrrr");
 
+        progressBar = (ProgressBar) findViewById(R.id.account_progress_bar);
         listViewTrampA = (ListView) findViewById(R.id.list_view_tramp_count);
         trampList = new ArrayList<>();
 
-
+      progressBar.setVisibility(View.VISIBLE);
     }
 
     private void getRegData() {
@@ -82,24 +83,26 @@ public class Account extends AppCompatActivity {
                             public void onDataChange(DataSnapshot dataSnapshot) {
                                 trampList.clear();
 
-                                for (DataSnapshot acountSnapshot : dataSnapshot.getChildren()) {
-                                    HomeFirebaseClass homeTramp = acountSnapshot.getValue(HomeFirebaseClass.class);
+                                for (DataSnapshot accountSnapshot : dataSnapshot.getChildren()) {
+                                    HomeFirebaseClass homeTramp = accountSnapshot.getValue(HomeFirebaseClass.class);
                                     trampList.add(0, homeTramp);
 
 
                                 }
                                 TrampHomeAdapter adaptera = new TrampHomeAdapter(Account.this, trampList);
                                 listViewTrampA.setAdapter(adaptera);
+                                progressBar.setVisibility(View.GONE);
                             }
 
                             @Override
                             public void onCancelled(DatabaseError databaseError) {
-
+                              progressBar.setVisibility(View.GONE);
                             }
                         });
                     }
                 } else {
                     Toast.makeText(Account.this, "please check the network connection", Toast.LENGTH_LONG).show();
+                    progressBar.setVisibility(View.GONE);
                 }
             }
         }, 1000);// delay

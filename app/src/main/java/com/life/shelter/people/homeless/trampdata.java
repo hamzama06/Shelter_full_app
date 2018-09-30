@@ -117,23 +117,23 @@ public class trampdata extends AppCompatActivity {
 
     @RequiresApi(api = 26)
     private void addTramp() throws IOException {  //throws IOException because of try & catch vith method above
-        String mTrampName = nameEditText.getText().toString();
-        String mTrampAddress = addressEditText.getText().toString();
-        String mTrampCity = cityEditText.getText().toString();
+        String mtrampname = nameEditText.getText().toString();
+        String mtrampaddress = addressEditText.getText().toString();
+        String mtrampcity = cityEditText.getText().toString();
 
         FirebaseUser user = mAuth.getCurrentUser();
 
         if (user != null) {
-           String userId= mAuth.getCurrentUser().getUid();
+            String userId = mAuth.getCurrentUser().getUid();
             if (user.getPhotoUrl() != null) {
                 userPhotoUri = user.getPhotoUrl().toString();
             }
             if (user.getDisplayName() != null) {
-                userName = user.getDisplayName().toString();
+                userName = user.getDisplayName();
             }
 
             //user name has space not null so i need to reset it to null
-            if (user.getDisplayName().trim().equals("")) {
+            if (user.getDisplayName().trim() == "") {
                 userName = null;
             }
             Calendar calendar = Calendar.getInstance();
@@ -141,16 +141,18 @@ public class trampdata extends AppCompatActivity {
             String postdate = sdf.format(calendar.getTime());
 
 
-            if ((!TextUtils.isEmpty(mTrampName)) && (!TextUtils.isEmpty(mTrampAddress)) && (!TextUtils.isEmpty(mTrampCity))) {
+            if ((!TextUtils.isEmpty(mtrampname)) && (!TextUtils.isEmpty(mtrampaddress)) && (!TextUtils.isEmpty(mtrampcity))) {
                 if (!s.equals("a")) {
 
+//we here replace code with one has the same id for both home and account activity
+                    DatabaseReference reference = databaseTramp.push();
+                    String id = reference.getKey();
+                    HomeFirebaseClass homefirebaseclass = new HomeFirebaseClass(id, mtrampname, mtrampaddress, mtrampcity, s,
+                            userPhotoUri, userName, postdate, userId);
+                    //  databasetramp.push().setValue(homefirebaseclass);
+                    databaseTramp.child(country).child(type).child("users").child(mAuth.getCurrentUser().getUid()).child(id).setValue(homefirebaseclass);
 
-                    HomeFirebaseClass homefirebaseclass = new HomeFirebaseClass(mTrampName, mTrampAddress, mTrampCity, s, userPhotoUri, userName, postdate,userId);
-
-
-                    databaseTramp.child(country).child(type).child("users").child(mAuth.getCurrentUser().getUid()).push().setValue(homefirebaseclass);
-
-
+                    // databaseacount.push().setValue(homefirebaseclass);
                     Toast.makeText(this, "tramp data saved", Toast.LENGTH_LONG).show();
                     nameEditText.setText("");
                     addressEditText.setText("");
@@ -163,7 +165,7 @@ public class trampdata extends AppCompatActivity {
                     finish();
                     startActivity(intent2);
                 } else {
-                    Toast.makeText(this, "you should add a photo", Toast.LENGTH_LONG).show();
+                    Toast.makeText(this, "you should add aphoto", Toast.LENGTH_LONG).show();
                 }
             } else {
                 Toast.makeText(this, "you should fill all fields", Toast.LENGTH_LONG).show();

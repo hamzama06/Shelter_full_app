@@ -45,7 +45,7 @@ public class displayOrganizations extends AppCompatActivity {
         handler.postDelayed(new Runnable() {// delay
             @Override
             public void run() {// delay
-                // Do something after 5s = 5000ms
+                // Do something after 1s = 1000ms
                 if (isNetworkConnected()) {
                     if(country != null &&  type != null) {
                         databaseTramp.child(country).child("Organization").child("users").addListenerForSingleValueEvent(new ValueEventListener() {
@@ -58,6 +58,7 @@ public class displayOrganizations extends AppCompatActivity {
 
                                     for (DataSnapshot userdataSnapshot : userId.getChildren()) {
 
+                                        String cId = userdataSnapshot.child("cId").getValue(String.class);
                                         String hName = userdataSnapshot.child("cName").getValue(String.class);
                                         String hAddress = userdataSnapshot.child("cAddress").getValue(String.class);
                                         String hCity = userdataSnapshot.child("cCity").getValue(String.class);
@@ -67,7 +68,7 @@ public class displayOrganizations extends AppCompatActivity {
                                         String hDate = userdataSnapshot.child("pdate").getValue(String.class);
                                         String hUserId = userdataSnapshot.child("userid").getValue(String.class);
 
-                                        HomeFirebaseClass homeTramp = new HomeFirebaseClass(hName, hAddress, hCity, hUri, hUserUri, hUserName, hDate,hUserId);
+                                        HomeFirebaseClass homeTramp = new HomeFirebaseClass(cId, hName, hAddress, hCity, hUri, hUserUri, hUserName, hDate,hUserId);
                                         trampList.add(0, homeTramp);
                                     }
                                 }

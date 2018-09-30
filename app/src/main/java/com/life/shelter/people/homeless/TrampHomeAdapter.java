@@ -1,6 +1,7 @@
 package com.life.shelter.people.homeless;
 
 import android.app.Activity;
+import android.app.Dialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -8,7 +9,6 @@ import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
-import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
@@ -16,6 +16,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
@@ -26,7 +27,6 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
 import com.bumptech.glide.request.RequestOptions;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -36,6 +36,7 @@ import com.google.firebase.database.ValueEventListener;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.Serializable;
 import java.util.List;
 
 import static android.support.v4.app.ActivityCompat.requestPermissions;
@@ -55,6 +56,8 @@ public class TrampHomeAdapter extends ArrayAdapter<HomeFirebaseClass> {
     private DatabaseReference databaseReg;
     ImageView aTrampPhoto;
 
+    private RegisterClass registerClass = new RegisterClass();
+
     public TrampHomeAdapter(Activity context, List<HomeFirebaseClass> trampList) {
         super(context, R.layout.list_layout_home, trampList);
         this.context = context;
@@ -64,8 +67,14 @@ public class TrampHomeAdapter extends ArrayAdapter<HomeFirebaseClass> {
     @NonNull
     @Override
     public View getView(final int position, @Nullable View convertView, @NonNull ViewGroup parent) {
-        LayoutInflater inflater = context.getLayoutInflater();
-        final View listViewItem = inflater.inflate(R.layout.list_layout_home, null, true);
+
+        View listViewItem = convertView;
+
+        if (listViewItem == null){
+            LayoutInflater inflater = context.getLayoutInflater();
+            listViewItem = inflater.inflate(R.layout.list_layout_home, parent, false);
+        }
+
 
         final TextView aTrampName = (TextView) listViewItem.findViewById(R.id.tramp_name);
         final TextView aTrampAddress = (TextView) listViewItem.findViewById(R.id.tramp_address);
@@ -82,7 +91,21 @@ public class TrampHomeAdapter extends ArrayAdapter<HomeFirebaseClass> {
         aUserName.equals(null);
         final ImageView aFaceLogo = (ImageView) listViewItem.findViewById(R.id.face_logo);
         final ImageView aDonateLogo = (ImageView) listViewItem.findViewById(R.id.donate_logo);
+        // more option button
+        ImageView moreOption = listViewItem.findViewById(R.id.more_list);
+
+        final HomeFirebaseClass hometramp = trampList.get(position);
 //////////////////////////////////////////////////////////////////
+
+        // more option click listener
+        moreOption.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showItemDialog(hometramp, position);
+            }
+        });
+
+
         aUserName.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
@@ -105,7 +128,7 @@ public class TrampHomeAdapter extends ArrayAdapter<HomeFirebaseClass> {
             public void onClick(View v) {
                 HomeFirebaseClass hometramp = trampList.get(position);
                 Intent uIntent = new Intent(context, userwork.class);
-                 uIntent.putExtra("userid",  hometramp.getuserid());
+                 uIntent.putExtra("userid",  hometramp.getUserId());
                  uIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                  context.startActivity(uIntent);
                 // context.finish();
@@ -116,12 +139,14 @@ public class TrampHomeAdapter extends ArrayAdapter<HomeFirebaseClass> {
             public void onClick(View v) {
                 HomeFirebaseClass hometramp = trampList.get(position);
                 Intent uIntent = new Intent(context, userwork.class);
-                uIntent.putExtra("userid",  hometramp.getuserid());
+                uIntent.putExtra("userid",  hometramp.getUserId());
                 uIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 context.startActivity(uIntent);
                // context.finish();
             }
         });
+
+
 
         aFaceLogo.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -137,51 +162,76 @@ public class TrampHomeAdapter extends ArrayAdapter<HomeFirebaseClass> {
           @Override
                 public void onCheckedChanged(final CompoundButton buttonView, final boolean isChecked) {
 
-               getRegData();
-             final Handler handler = new Handler();// delay
-              handler.postDelayed(new Runnable() {// delay
-                @Override
-              public void run() {// delay
-              if (!type.equals("Organization")) {
+//               getRegData();
+//             final Handler handler = new Handler();// delay
+//              handler.postDelayed(new Runnable() {// delay
+//                @Override
+//              public void run() {// delay
+//              if (!type.equals("Organization")) {
+//
+//                  Toast.makeText(context, "you must be an organization", Toast.LENGTH_LONG).show();
+//
+//                  buttonView.setChecked(false);
+//                  return;
+//              }
+//              DatabaseReference databasetramp= FirebaseDatabase.getInstance().getReference("trampoos");
+//              HomeFirebaseClass hometramp = trampList.get(position);
+//
+//              if (isChecked) {
+//                  databasetramp.child(country).child("Organization").child("users").child(mAuth.getCurrentUser().getUid()).push().setValue(hometramp);
+//
+//                  FirebaseUser user = mAuth.getCurrentUser();
+//                  if(user.getDisplayName() != null){
+//                      tasken.setText(user.getDisplayName());
+//                  }else {
+//                      tasken.setText("Unknown name");;
+//                  }
+//              } else {
+//                  databasetramp.child(country).child("Organization").child("users").child(mAuth.getCurrentUser().getUid()).push().setValue(null);
+//
+//              }}
+//                                     }, 1000);// delay//
+///////
 
-                  Toast.makeText(context, "you must be an organization", Toast.LENGTH_LONG).show();
-
+              // get back with message if account type not Organization
+              if (!registerClass.getType().equals("Organization")) {
+                  Toast.makeText(context, "you must be an organization", Toast.LENGTH_SHORT).show();
                   buttonView.setChecked(false);
                   return;
               }
-              DatabaseReference databasetramp= FirebaseDatabase.getInstance().getReference("trampoos");
-              HomeFirebaseClass hometramp = trampList.get(position);
 
+              // account type Organization
+              DatabaseReference database = FirebaseDatabase.getInstance().getReference("trampoos")
+                      .child(registerClass.getCountry())
+                      .child(registerClass.getType())
+                      .child("users")
+                      .child(mAuth.getCurrentUser().getUid());
+              // update check status
+              database.child(hometramp.getId()).child("checked").setValue(isChecked);
+              // update check box label
               if (isChecked) {
-                  databasetramp.child(country).child("Organization").child("users").child(mAuth.getCurrentUser().getUid()).push().setValue(hometramp);
+                  if (hometramp.getUserName() != null)
+                      tasken.setText(hometramp.getUserName());
+                  else
+                      tasken.setText("Unknown name");
+              }
+              // feedback message
+              Toast.makeText(context, "Data status changed!.", Toast.LENGTH_SHORT).show();
 
-                  FirebaseUser user = mAuth.getCurrentUser();
-                  if(user.getDisplayName() != null){
-                      tasken.setText(user.getDisplayName());
-                  }else {
-                      tasken.setText("Unknown name");;
-                  }
-              } else {
-                  databasetramp.child(country).child("Organization").child("users").child(mAuth.getCurrentUser().getUid()).push().setValue(null);
-
-              }}
-                                     }, 1000);// delay//
-///////
          }//
 
-        }
-     );
+        });
 
 
 
         ///////////////////////////////////////////////////////////////////
-        HomeFirebaseClass hometramp = trampList.get(position);
 
-        aTrampName.setText(hometramp.getcName());
-        aTrampAddress.setText(hometramp.getcAddress());
-        aTrampCity.setText(hometramp.getcCity());
 
-        a1=hometramp.getcUri();
+        aTrampName.setText(hometramp.getName());
+        aTrampAddress.setText(hometramp.getAddress());
+        aTrampCity.setText(hometramp.getCity());
+
+        a1=hometramp.getUri();
 
         RequestOptions requestOptions = new RequestOptions();
         requestOptions = requestOptions.transforms(new RoundedCorners(16));
@@ -193,7 +243,7 @@ public class TrampHomeAdapter extends ArrayAdapter<HomeFirebaseClass> {
 
 
 
-        aDate.setText(hometramp.getPdate());
+        aDate.setText(hometramp.getDate());
 
      ////////////////////////////////
         a2=hometramp.getUserUri();
@@ -209,8 +259,8 @@ public class TrampHomeAdapter extends ArrayAdapter<HomeFirebaseClass> {
                  .apply(RequestOptions.circleCropTransform())
                  .into(aUserPhoto);         }
 
-         if(hometramp.getUsername() != null){
-         aUserName.setText(hometramp.getUsername());
+         if(hometramp.getUserName() != null){
+         aUserName.setText(hometramp.getUserName());
          }else {
 
          aUserName.setText("Unknown name");
@@ -294,6 +344,61 @@ return listViewItem;
         intent.putExtra(Intent.EXTRA_STREAM, path);
         intent.putExtra(Intent.EXTRA_TEXT, "a tramp need help");
         context.startActivity(Intent.createChooser(intent, "share picture"));
+    }
+
+    /**
+     *  Delete or Edit item data
+     * @param item HomeFirebaseClass
+     * @param position index of item in list
+     */
+    private void showItemDialog(final HomeFirebaseClass item, int position) {
+        final Dialog dialog = new Dialog(context);
+        final int itemIndex = position;
+        String userId = mAuth.getCurrentUser().getUid();
+
+        final DatabaseReference database = FirebaseDatabase.getInstance().getReference("trampoos")
+                .child(registerClass.getCountry())
+                .child(registerClass.getType())
+                .child("users")
+                .child(userId);
+
+        // can edit or delete it
+        if (item.isOwner(userId)) {
+            dialog.setContentView(R.layout.delete_edit_dialog);
+
+            Button edit = dialog.findViewById(R.id.edit_button_dialog);
+            Button delete = dialog.findViewById(R.id.delete_button_dialog);
+            Button close = dialog.findViewById(R.id.close_button_dialog);
+
+            // update data
+            edit.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent intent = new Intent(context,EditDataActivity.class);
+                    intent.putExtra("data", (Serializable) item);
+                    context.startActivity(intent);
+                }
+            });
+            // remove data
+            delete.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (database.child(item.getId()).removeValue().isSuccessful())
+                        trampList.remove(itemIndex);
+                }
+            });
+            // close dialog
+            close.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    dialog.dismiss();
+                }
+            });
+
+            dialog.setCanceledOnTouchOutside(false);
+            // show dialog view
+            dialog.show();
+        }
     }
 
 
