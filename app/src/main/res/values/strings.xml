@@ -47,7 +47,7 @@
 
 
     <string-array name="type_array">
-        <item>Individiual</item>
+        <item>Individual</item>
         <item>Organization</item>
     </string-array>
 

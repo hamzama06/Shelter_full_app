@@ -6,7 +6,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
-import android.support.annotation.RequiresApi;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.view.View;
@@ -51,6 +50,7 @@ public class trampdata extends AppCompatActivity {
     private FirebaseAuth mAuth;
 
     String s="a";
+    int reloadCount = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,19 +79,20 @@ public class trampdata extends AppCompatActivity {
 
 
         buttonSave.setOnClickListener(new View.OnClickListener() {
-            @RequiresApi(api = 26)
+
             @Override
             public void onClick(View v) {
 
-                try {// try & catch for Notification)
-                    addTramp();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+//                try {// try & catch for Notification)
+//                  //  addTramp();
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+                getRegData();
             }
         });
         /////////////////////////////////////
-        getRegData();
+
 
     }
 
@@ -101,8 +102,27 @@ public class trampdata extends AppCompatActivity {
         ValueEventListener postListener = new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                type = dataSnapshot.child(mAuth.getCurrentUser().getUid()).child("ctype").getValue(String.class);
-                country = dataSnapshot.child(mAuth.getCurrentUser().getUid()).child("ccountry").getValue(String.class);
+
+
+                type = dataSnapshot.child(mAuth.getCurrentUser().getUid()).child("type").getValue(String.class);
+                country = dataSnapshot.child(mAuth.getCurrentUser().getUid()).child("country").getValue(String.class);
+
+              if (country != null){
+                  try {
+                      addTramp();
+                  } catch (IOException e) {
+                      e.printStackTrace();
+                  }
+              }else{if (reloadCount < 4){
+                  getRegData();
+                  reloadCount++;
+              }else{
+                  Toast.makeText(trampdata.this, "an error occurred", Toast.LENGTH_SHORT).show();
+              }
+
+              }
+
+
 
             }
 
@@ -115,7 +135,7 @@ public class trampdata extends AppCompatActivity {
     }
 
 
-    @RequiresApi(api = 26)
+
     private void addTramp() throws IOException {  //throws IOException because of try & catch vith method above
         String mtrampname = nameEditText.getText().toString();
         String mtrampaddress = addressEditText.getText().toString();
@@ -124,7 +144,7 @@ public class trampdata extends AppCompatActivity {
         FirebaseUser user = mAuth.getCurrentUser();
 
         if (user != null) {
-            String userId = mAuth.getCurrentUser().getUid();
+            String userId= mAuth.getCurrentUser().getUid();
             if (user.getPhotoUrl() != null) {
                 userPhotoUri = user.getPhotoUrl().toString();
             }
@@ -132,8 +152,8 @@ public class trampdata extends AppCompatActivity {
                 userName = user.getDisplayName();
             }
 
-            //user name has space not null so i need to reset it to null
-            if (user.getDisplayName().trim() == "") {
+            //كuser name has space not null so i need to reset it to null
+            if (user.getDisplayName().trim().equals("")) {
                 userName = null;
             }
             Calendar calendar = Calendar.getInstance();
@@ -143,14 +163,13 @@ public class trampdata extends AppCompatActivity {
 
             if ((!TextUtils.isEmpty(mtrampname)) && (!TextUtils.isEmpty(mtrampaddress)) && (!TextUtils.isEmpty(mtrampcity))) {
                 if (!s.equals("a")) {
-
-//we here replace code with one has the same id for both home and account activity
+                    //we here replace code with one has the same id for both home and account activity
                     DatabaseReference reference = databaseTramp.push();
                     String id = reference.getKey();
-                    HomeFirebaseClass homefirebaseclass = new HomeFirebaseClass(id, mtrampname, mtrampaddress, mtrampcity, s,
-                            userPhotoUri, userName, postdate, userId);
-                    //  databasetramp.push().setValue(homefirebaseclass);
-                    databaseTramp.child(country).child(type).child("users").child(mAuth.getCurrentUser().getUid()).child(id).setValue(homefirebaseclass);
+                    HomeFirebaseClass homefirebaseclass = new HomeFirebaseClass(mtrampname, mtrampaddress, mtrampcity, s, userPhotoUri, userName, postdate,userId);
+
+                    if (country != null){
+                    databaseTramp.child(country).child("Individual").child("users").child(mAuth.getCurrentUser().getUid()).push().setValue(homefirebaseclass);
 
                     // databaseacount.push().setValue(homefirebaseclass);
                     Toast.makeText(this, "tramp data saved", Toast.LENGTH_LONG).show();
@@ -158,12 +177,24 @@ public class trampdata extends AppCompatActivity {
                     addressEditText.setText("");
                     cityEditText.setText("");
 
+
                     Intent intent2 = new Intent(trampdata.this, home.class);
 
                     // Start the new activity
                     intent2.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                     finish();
                     startActivity(intent2);
+
+                    }else {
+                        if (reloadCount < 4){
+                            getRegData();
+                            reloadCount++;
+                        }else {
+                            Toast.makeText(this, "an error occurred while adding a new tramp ", Toast.LENGTH_SHORT).show();
+                        }
+
+                    }
+
                 } else {
                     Toast.makeText(this, "you should add aphoto", Toast.LENGTH_LONG).show();
                 }

@@ -26,8 +26,17 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
-        android:backgroundTint="@android:color/darker_gray"
-       android:visibility="gone"
+        android:visibility="gone"
+        />
+    <TextView
+        android:id="@+id/home_no_data_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="No data"
+        android:textSize="16sp"
+        android:layout_centerInParent="true"
+        android:textColor="@android:color/darker_gray"
+        android:visibility="gone"
         />
 
 </RelativeLayout>

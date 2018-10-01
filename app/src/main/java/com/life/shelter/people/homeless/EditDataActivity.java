@@ -77,15 +77,17 @@ public class EditDataActivity extends AppCompatActivity {
                 String postdate = sdf.format(calendar.getTime());
                 // check if all field filled
                 if ((!TextUtils.isEmpty(mName)) && (!TextUtils.isEmpty(mAddress)) && (!TextUtils.isEmpty(mCity))) {
-                    String id = data.getId();
+                   // String id = data.getId();
                     String ownerId = data.getUserId();
                     String userName = data.getName();
                     String userphotoUri = data.getUserUri();
                     String photoUrl = data.getUri();
-                    HomeFirebaseClass homefirebaseclass = new HomeFirebaseClass(id,mName, mAddress, mCity, photoUrl,
+                    HomeFirebaseClass homefirebaseclass = new HomeFirebaseClass(mName, mAddress, mCity, photoUrl,
                             userphotoUri, userName, postdate, ownerId);
                     // save data to database
-                    database.child(id).setValue(homefirebaseclass);
+
+                    database.child("....id....").setValue(homefirebaseclass);
+
                     // hide progress Bar
                     progressBar.setVisibility(View.GONE);
                     // success message

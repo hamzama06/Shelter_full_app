@@ -9,6 +9,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.ListView;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
@@ -29,6 +30,10 @@ public class Account extends AppCompatActivity {
     ListView listViewTrampA;
     List<HomeFirebaseClass> trampList;
     private ProgressBar progressBar;
+    int reloadCount = 0;
+    private ValueEventListener regValueListener;
+    private   ValueEventListener trampValueListener;
+
 
 
     @Override
@@ -52,11 +57,70 @@ public class Account extends AppCompatActivity {
 ////import data of country and tope
         databaseReg = FirebaseDatabase.getInstance().getReference("reg_data");
 
-        ValueEventListener postListener = new ValueEventListener() {
+         regValueListener = new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                type = dataSnapshot.child(mAuth.getCurrentUser().getUid()).child("ctype").getValue(String.class);
-                country = dataSnapshot.child(mAuth.getCurrentUser().getUid()).child("ccountry").getValue(String.class);
+                type = dataSnapshot.child(mAuth.getCurrentUser().getUid()).child("type").getValue(String.class);
+                country = dataSnapshot.child(mAuth.getCurrentUser().getUid()).child("country").getValue(String.class);
+
+                final Handler handler = new Handler();// delay
+                handler.postDelayed(new Runnable() {// delay
+                    @Override
+                    public void run() {// delay
+                        // Do something after 1s = 1000ms
+                        if (isNetworkConnected()) {
+                              if (country != null && type != null) {
+                             trampValueListener = new ValueEventListener() {
+
+                                @Override
+                                public void onDataChange(DataSnapshot dataSnapshot) {
+                                    trampList.clear();
+
+                                    for (DataSnapshot accountSnapshot : dataSnapshot.getChildren()) {
+
+                                       HomeFirebaseClass homeTramp = accountSnapshot.getValue(HomeFirebaseClass.class);
+
+                                        if (trampList.size() > 0){
+                                            trampList.clear();
+                                        }
+
+                                        trampList.add(0, homeTramp);
+                                    }
+                                    TrampHomeAdapter adapter = new TrampHomeAdapter(Account.this, trampList);
+                                    listViewTrampA.setAdapter(adapter);
+                                    progressBar.setVisibility(View.GONE);
+
+                                    //display no data text if list is empty
+                                    TextView noDataView = (TextView) findViewById(R.id.account_no_data_tv);
+                                    listViewTrampA.setEmptyView(noDataView);
+                                }
+
+
+
+                                @Override
+                                public void onCancelled(DatabaseError databaseError) {
+                                    progressBar.setVisibility(View.GONE);
+                                }
+                            };
+                            databaseTramp.child(country).child(type).child("users").child(mAuth.getCurrentUser().getUid()).addValueEventListener(trampValueListener);
+                              }else {
+                                  if (reloadCount < 4){
+                                      getRegData();
+                                      reloadCount++;
+                                  }else {
+                                      Toast.makeText(Account.this, "No data", Toast.LENGTH_SHORT).show();
+                                  }
+
+                              }
+                        } else {
+                            Toast.makeText(Account.this, "please check the network connection", Toast.LENGTH_LONG).show();
+                            progressBar.setVisibility(View.GONE);
+                        }
+                    }
+                }, 3000);// delay
+
+
+
             }
 
             @Override
@@ -64,48 +128,14 @@ public class Account extends AppCompatActivity {
                 // Getting Post failed, log a message
             }
         };
-        databaseReg.addValueEventListener(postListener);
+        databaseReg.addValueEventListener(regValueListener);
     }
 
     @Override
     protected void onStart() {
         super.onStart();
         getRegData();
-        final Handler handler = new Handler();// delay
-        handler.postDelayed(new Runnable() {// delay
-            @Override
-            public void run() {// delay
-                // Do something after 5s = 5000ms
-                if (isNetworkConnected()) {
-                    if (country != null && type != null) {
-                        databaseTramp.child(country).child(type).child("users").child(mAuth.getCurrentUser().getUid()).addValueEventListener(new ValueEventListener() {
-                            @Override
-                            public void onDataChange(DataSnapshot dataSnapshot) {
-                                trampList.clear();
 
-                                for (DataSnapshot accountSnapshot : dataSnapshot.getChildren()) {
-                                    HomeFirebaseClass homeTramp = accountSnapshot.getValue(HomeFirebaseClass.class);
-                                    trampList.add(0, homeTramp);
-
-
-                                }
-                                TrampHomeAdapter adaptera = new TrampHomeAdapter(Account.this, trampList);
-                                listViewTrampA.setAdapter(adaptera);
-                                progressBar.setVisibility(View.GONE);
-                            }
-
-                            @Override
-                            public void onCancelled(DatabaseError databaseError) {
-                              progressBar.setVisibility(View.GONE);
-                            }
-                        });
-                    }
-                } else {
-                    Toast.makeText(Account.this, "please check the network connection", Toast.LENGTH_LONG).show();
-                    progressBar.setVisibility(View.GONE);
-                }
-            }
-        }, 1000);// delay
 
     }
 
@@ -116,6 +146,18 @@ public class Account extends AppCompatActivity {
             return true;
         } else {
             return false;
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (regValueListener != null){
+            databaseReg.removeEventListener(regValueListener);
+        }
+
+        if (trampValueListener != null){
+            databaseTramp.removeEventListener(trampValueListener);
         }
     }
 }

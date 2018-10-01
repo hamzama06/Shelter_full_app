@@ -8,53 +8,54 @@ public class HomeFirebaseClass {
 
 
 
-    private String cId;
-    private String cName;
-    private String cAddress;
-    private String cCity;
-    private String cUri;
+   // private String cId;
+    private String name;
+    private String address;
+    private String city;
+    private String uri;
 
     private String userUri;
-    private String username;
-    private String pdate;
-    private String userid;
+    private String userName;
+    private String date;
+    private String userId;
     private Boolean checked;
 
 
 
     public  HomeFirebaseClass() {}
 
-    public HomeFirebaseClass(String cId , String cName, String cAddress, String cCity, String cUri, String userUri, String username, String pdate,String userid) {
+    public HomeFirebaseClass( String name, String address, String city, String uri, String userUri, String userName, String date, String userId) {
 
-        this.cId = cId;
-        this.cName = cName;
-        this.cAddress = cAddress;
-        this.cCity = cCity;
-        this.cUri = cUri;
+      //  this.cId = cId;
+        this.name = name;
+        this.address = address;
+        this.city = city;
+        this.uri = uri;
         this.userUri = userUri;
-        this.username = username;
-        this.pdate = pdate;
-        this.userid = userid;
+        this.userName = userName;
+        this.date = date;
+        this.userId = userId;
 
     }
 
     public String getName() {
-        return cName;
-    }
-    public String getId() {
-        return cId;
+        return name;
     }
 
+//    public String getId() {
+//        return cId;
+//    }
+
     public String getAddress() {
-        return cAddress;
+        return address;
     }
 
     public String getCity() {
-        return cCity;
+        return city;
     }
 
     public String getUri() {
-        return cUri;
+        return uri;
     }
 
     public String getUserUri() {
@@ -62,15 +63,15 @@ public class HomeFirebaseClass {
     }
 
     public String getUserName() {
-        return username;
+        return userName;
     }
 
     public String getDate() {
-        return pdate;
+        return date;
     }
 
     public String getUserId() {
-        return userid;
+        return userId;
     }
 
     public boolean isOwner(String id) {

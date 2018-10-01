@@ -17,6 +17,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
@@ -26,8 +27,6 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.messaging.FirebaseMessaging;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,14 +34,15 @@ import java.util.List;
 public class home extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
     private FirebaseAuth mAuth;
-    private StorageReference mStorageRef;
     private DatabaseReference databaseTramp;
     private DatabaseReference databaseReg;
+    private ValueEventListener regValueListener;
+    private ValueEventListener trampValueListener;
     String type,country;
     ListView listViewTramp;
     private ProgressBar progressBar;
     List<HomeFirebaseClass> trampList;
-
+    int reloadCount = 0;
 
 
     @Override
@@ -57,7 +57,6 @@ public class home extends AppCompatActivity
 
         databaseTramp= FirebaseDatabase.getInstance().getReference("trampoos");
         databaseReg = FirebaseDatabase.getInstance().getReference("reg_data");
-        mStorageRef = FirebaseStorage.getInstance().getReference("trrrrr");
         listViewTramp= (ListView)findViewById(R.id.list_view_tramp);
         trampList=new ArrayList<>();
 
@@ -65,6 +64,7 @@ public class home extends AppCompatActivity
         FirebaseMessaging.getInstance().subscribeToTopic("pushNotifications");
 
        progressBar.setVisibility(View.VISIBLE);
+
 
         addTrampButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -98,63 +98,8 @@ public class home extends AppCompatActivity
     protected void onStart() {
         super.onStart();
 
-        getRegData();
+       getRegData();
 
-        final Handler handler = new Handler();// delay
-        handler.postDelayed(new Runnable() {// delay
-            @Override
-            public void run() {// delay
-                // Do something after 3s = 3000ms
-
-
-        if (isNetworkConnected()) {
-            if(country != null &&  type != null) {
-                databaseTramp.child(country).child("Individiual").child("users").addListenerForSingleValueEvent(new ValueEventListener() {
-
-
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        trampList.clear();
-
-                        for (DataSnapshot userid : dataSnapshot.getChildren()) {
-
-                            for (DataSnapshot userdataSnapshot : userid.getChildren()) {
-
-                                String cId = userdataSnapshot.child("cId").getValue(String.class);
-                                String hname = userdataSnapshot.child("cName").getValue(String.class);
-                                String haddress = userdataSnapshot.child("cAddress").getValue(String.class);
-                                String hcity = userdataSnapshot.child("cCity").getValue(String.class);
-                                String huri = userdataSnapshot.child("cUri").getValue(String.class);
-                                String huseruri = userdataSnapshot.child("userUri").getValue(String.class);
-                                String husername = userdataSnapshot.child("username").getValue(String.class);
-                                String hpdate = userdataSnapshot.child("pdate").getValue(String.class);
-                                String huserid = userdataSnapshot.child("userid").getValue(String.class);
-
-                                HomeFirebaseClass hometramp = new HomeFirebaseClass(cId ,hname, haddress, hcity, huri, huseruri, husername, hpdate,huserid);
-                                trampList.add(0, hometramp);
-                            }
-                        }
-                        TrampHomeAdapter adapter = new TrampHomeAdapter(home.this, trampList);
-                        //adapter.notifyDataSetChanged();
-                        listViewTramp.setAdapter(adapter);
-                        progressBar.setVisibility(View.GONE);
-
-
-                    }
-
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
-                        progressBar.setVisibility(View.GONE);
-                    }
-                });
-
-
-            }}else {
-            progressBar.setVisibility(View.GONE);
-        Toast.makeText(home.this, "please check the network connection", Toast.LENGTH_LONG).show();
-    }
-    }
-        }, 3000);// delay
 
 
     }
@@ -242,12 +187,79 @@ private boolean isNetworkConnected() {
 
 
     ////import data of country and tope
-        ValueEventListener postListener = new ValueEventListener() {
+        regValueListener = new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
 
-                type = dataSnapshot.child(mAuth.getCurrentUser().getUid()).child("ctype").getValue(String.class);
-                country = dataSnapshot.child(mAuth.getCurrentUser().getUid()).child("ccountry").getValue(String.class);
+
+              if (mAuth.getCurrentUser().getUid() != null){
+
+                    type = dataSnapshot.child(mAuth.getCurrentUser().getUid()).child("type").getValue(String.class);
+                    country = dataSnapshot.child(mAuth.getCurrentUser().getUid()).child("country").getValue(String.class);
+            }
+
+
+                final Handler handler = new Handler();// delay
+                handler.postDelayed(new Runnable() {// delay
+                    @Override
+                    public void run() {// delay
+                        // Do something after 3s = 3000ms
+
+
+                        if (isNetworkConnected()) {
+                          if(country != null &&  type != null) {
+                               trampValueListener  = new ValueEventListener() {
+
+                                @Override
+                                public void onDataChange(DataSnapshot dataSnapshot) {
+                                    trampList.clear();
+
+                                    for (DataSnapshot userId : dataSnapshot.getChildren()) {
+
+                                        for (DataSnapshot userdataSnapshot : userId.getChildren()) {
+
+                                            HomeFirebaseClass homeTramp = userdataSnapshot.getValue(HomeFirebaseClass.class);
+
+                                            trampList.add(0, homeTramp);
+
+                                        }
+                                    }
+                                    TrampHomeAdapter adapter = new TrampHomeAdapter(home.this, trampList);
+                                    //adapter.notifyDataSetChanged();
+                                    listViewTramp.setAdapter(adapter);
+                                    progressBar.setVisibility(View.GONE);
+
+                                    // display no data text if list is empty
+                                    TextView noDataView = (TextView) findViewById(R.id.home_no_data_tv);
+                                    listViewTramp.setEmptyView(noDataView);
+
+                                }
+
+                                @Override
+                                public void onCancelled(DatabaseError databaseError) {
+                                    progressBar.setVisibility(View.GONE);
+                                }
+                            };
+
+                              databaseTramp.child(country).child("Individual").child("users").addListenerForSingleValueEvent(trampValueListener);
+
+                            }else {
+                              if (reloadCount < 5){
+                                  getRegData();
+                                  reloadCount++;
+                              }else {
+                                  progressBar.setVisibility(View.GONE);
+                              }
+
+                          }
+                        }else {
+                            progressBar.setVisibility(View.GONE);
+                            Toast.makeText(home.this, "please check the network connection", Toast.LENGTH_LONG).show();
+                        }
+                    }
+                }, 3000);// delay
+
+
             }
 
             @Override
@@ -255,8 +267,20 @@ private boolean isNetworkConnected() {
                 // Getting Post failed, log a message
             }
         };
-        databaseReg .addValueEventListener(postListener);
+        databaseReg .addValueEventListener(regValueListener);
 
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        if (regValueListener != null){
+            databaseReg.removeEventListener(regValueListener);
+        }
+
+        if (trampValueListener != null){
+            databaseTramp.removeEventListener(trampValueListener);
+        }
+    }
 }

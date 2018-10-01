@@ -18,10 +18,8 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
-import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
@@ -158,69 +156,72 @@ public class TrampHomeAdapter extends ArrayAdapter<HomeFirebaseClass> {
         //chech box action
         final CheckBox tasken =(CheckBox)listViewItem.findViewById(R.id.tasken);
 
-        tasken.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-          @Override
-                public void onCheckedChanged(final CompoundButton buttonView, final boolean isChecked) {
 
-//               getRegData();
-//             final Handler handler = new Handler();// delay
-//              handler.postDelayed(new Runnable() {// delay
-//                @Override
-//              public void run() {// delay
-//              if (!type.equals("Organization")) {
+//        tasken.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+//          @Override
+//                public void onCheckedChanged(final CompoundButton buttonView, final boolean isChecked) {
 //
-//                  Toast.makeText(context, "you must be an organization", Toast.LENGTH_LONG).show();
+////               getRegData();
+////             final Handler handler = new Handler();// delay
+////              handler.postDelayed(new Runnable() {// delay
+////                @Override
+////              public void run() {// delay
+////              if (!type.equals("Organization")) {
+////
+////                  Toast.makeText(context, "you must be an organization", Toast.LENGTH_LONG).show();
+////
+////                  buttonView.setChecked(false);
+////                  return;
+////              }
+////              DatabaseReference databasetramp= FirebaseDatabase.getInstance().getReference("trampoos");
+////              HomeFirebaseClass hometramp = trampList.get(position);
+////
+////              if (isChecked) {
+////                  databasetramp.child(country).child("Organization").child("users").child(mAuth.getCurrentUser().getUid()).push().setValue(hometramp);
+////
+////                  FirebaseUser user = mAuth.getCurrentUser();
+////                  if(user.getDisplayName() != null){
+////                      tasken.setText(user.getDisplayName());
+////                  }else {
+////                      tasken.setText("Unknown name");;
+////                  }
+////              } else {
+////                  databasetramp.child(country).child("Organization").child("users").child(mAuth.getCurrentUser().getUid()).push().setValue(null);
+////
+////              }}
+////                                     }, 1000);// delay//
+/////////
 //
+//              // get back with message if account type not Organization
+//              if (!registerClass.getType().equals("Organization")) {
+//                  Toast.makeText(context, "you must be an organization", Toast.LENGTH_SHORT).show();
 //                  buttonView.setChecked(false);
 //                  return;
 //              }
-//              DatabaseReference databasetramp= FirebaseDatabase.getInstance().getReference("trampoos");
-//              HomeFirebaseClass hometramp = trampList.get(position);
 //
+//              // account type Organization
+//              DatabaseReference database = FirebaseDatabase.getInstance().getReference("trampoos")
+//                      .child("Germany")    //registerClass.getCountry()
+//                      .child("Individual")    //registerClass.getType()
+//                      .child("users")
+//                      .child(mAuth.getCurrentUser().getUid());
+//              // update check status
+//
+//           //   database.child(hometramp.getId()).child("checked").setValue(isChecked);
+//
+//              // update check box label
 //              if (isChecked) {
-//                  databasetramp.child(country).child("Organization").child("users").child(mAuth.getCurrentUser().getUid()).push().setValue(hometramp);
+//                  if (hometramp.getUserName() != null)
+//                      tasken.setText(hometramp.getUserName());
+//                  else
+//                      tasken.setText("Unknown name");
+//              }
+//              // feedback message
+//              Toast.makeText(context, "Data status changed!.", Toast.LENGTH_SHORT).show();
 //
-//                  FirebaseUser user = mAuth.getCurrentUser();
-//                  if(user.getDisplayName() != null){
-//                      tasken.setText(user.getDisplayName());
-//                  }else {
-//                      tasken.setText("Unknown name");;
-//                  }
-//              } else {
-//                  databasetramp.child(country).child("Organization").child("users").child(mAuth.getCurrentUser().getUid()).push().setValue(null);
+//         }//
 //
-//              }}
-//                                     }, 1000);// delay//
-///////
-
-              // get back with message if account type not Organization
-              if (!registerClass.getType().equals("Organization")) {
-                  Toast.makeText(context, "you must be an organization", Toast.LENGTH_SHORT).show();
-                  buttonView.setChecked(false);
-                  return;
-              }
-
-              // account type Organization
-              DatabaseReference database = FirebaseDatabase.getInstance().getReference("trampoos")
-                      .child(registerClass.getCountry())
-                      .child(registerClass.getType())
-                      .child("users")
-                      .child(mAuth.getCurrentUser().getUid());
-              // update check status
-              database.child(hometramp.getId()).child("checked").setValue(isChecked);
-              // update check box label
-              if (isChecked) {
-                  if (hometramp.getUserName() != null)
-                      tasken.setText(hometramp.getUserName());
-                  else
-                      tasken.setText("Unknown name");
-              }
-              // feedback message
-              Toast.makeText(context, "Data status changed!.", Toast.LENGTH_SHORT).show();
-
-         }//
-
-        });
+//        });
 
 
 
@@ -342,7 +343,7 @@ return listViewItem;
         Intent intent = new Intent(Intent.ACTION_SEND);
         intent.setType("image/*");
         intent.putExtra(Intent.EXTRA_STREAM, path);
-        intent.putExtra(Intent.EXTRA_TEXT, "a tramp need help");
+        intent.putExtra(Intent.EXTRA_TEXT, "Hi, this tramp needs help");
         context.startActivity(Intent.createChooser(intent, "share picture"));
     }
 
@@ -383,8 +384,8 @@ return listViewItem;
             delete.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if (database.child(item.getId()).removeValue().isSuccessful())
-                        trampList.remove(itemIndex);
+//                    if (database.child(item.getId()).removeValue().isSuccessful())
+//                        trampList.remove(itemIndex);
                 }
             });
             // close dialog
